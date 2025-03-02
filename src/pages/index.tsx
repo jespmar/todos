@@ -15,14 +15,14 @@ const geistMono = Geist_Mono({
 });
 
 export default function Home() {
-  //const { data: session, status } = useSession();
+  const { data: session, status } = useSession();
   const router = useRouter();
 
   useEffect(() => {
-    if (status === "authenticated") {
+    if (session) {
       router.push("/todos");
     }
-  }, [status, router]);
+  }, [session, router]);
 
   // Show loading state while checking auth
   if (status === "loading") {
