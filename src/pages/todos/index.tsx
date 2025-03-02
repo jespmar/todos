@@ -523,7 +523,7 @@ export default function Todos() {
                                             setEditingListId(list.id);
                                             setEditingListTitle(list.title || '');
                                         }}
-                                        className="hidden md:block group-hover:block p-1 rounded-lg text-slate-400 hover:text-indigo-500 hover:bg-white dark:hover:bg-slate-700 transition-colors"
+                                        className={`${activeList === list.id ? 'md:block group-hover:block' : 'hidden'} p-1 rounded-lg text-slate-400 hover:text-indigo-500 hover:bg-white dark:hover:bg-slate-700 transition-colors`}
                                         title="Edit list name"
                                     >
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
