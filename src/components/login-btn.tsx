@@ -1,6 +1,10 @@
 import { useSession, signIn, signOut } from "next-auth/react"
 
-export default function Component() {
+interface LoginBtnProps {
+  className?: string;
+}
+
+export default function LoginBtn({ className }: LoginBtnProps) {
   const { data: session } = useSession()
   if (session && session.user?.email) {
     return (
@@ -21,7 +25,7 @@ export default function Component() {
     <div className="flex items-center gap-3">
       <button 
         onClick={() => signIn()} 
-        className="px-4 py-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors"
+        className={className || "px-4 py-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors"}
       >
         Sign in
       </button>
