@@ -5,8 +5,8 @@ import { db } from '@/lib/firebaseAdmin'
 
 interface Todo {
   id: string
-  text: string
-  completed: boolean
+  title: string
+  status: 'todo' | 'doing' | 'completed'
   createdAt?: string
   updatedAt?: string
 }
@@ -67,8 +67,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         // Prepare the updated todo data
         const updatedTodo = {
-            text: todo.text,
-            completed: todo.completed,
+            title: todo.title,
+            status: todo.status,
             createdAt: todo.createdAt || new Date().toISOString(),
             updatedAt: new Date().toISOString()
         }

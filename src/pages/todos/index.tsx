@@ -12,6 +12,7 @@ interface Todo {
     title: string
     status: TodoStatus
     createdAt: string
+    updatedAt?: string
 }
 
 interface TodoList {
@@ -40,22 +41,22 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 const getStatusStyle = (status: TodoStatus): string => {
     switch (status) {
         case 'completed':
-            return 'border-green-400 dark:border-green-500 bg-green-50 dark:bg-green-500/20 hover:bg-green-100 dark:hover:bg-green-500/30'
+            return 'bg-green-500 dark:bg-green-600 hover:bg-green-600 dark:hover:bg-green-700'
         case 'doing':
-            return 'border-yellow-400 dark:border-yellow-500 bg-yellow-50 dark:bg-yellow-500/20 hover:bg-yellow-100 dark:hover:bg-yellow-500/30'
+            return 'bg-yellow-400 dark:bg-yellow-500 hover:bg-yellow-500 dark:hover:bg-yellow-600'
         default:
-            return 'border-slate-300 dark:border-slate-600 hover:border-slate-400 dark:hover:border-slate-500'
+            return 'bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600'
     }
 }
 
 const getTitleStyle = (status: TodoStatus): string => {
     switch (status) {
-        case 'todo':
-            return 'text-slate-900 dark:text-slate-100'
-        case 'doing':
-            return 'text-yellow-700 dark:text-yellow-400 font-medium'
         case 'completed':
             return 'line-through text-slate-500 dark:text-slate-400'
+        case 'doing':
+            return 'text-yellow-700 dark:text-yellow-400 font-medium'
+        default:
+            return 'text-slate-900 dark:text-slate-100'
     }
 }
 
@@ -83,6 +84,7 @@ export default function Todos() {
                 throw new Error('Failed to fetch lists')
             }
             const data = await response.json()
+            console.log('Fetched lists:', data.lists)
             setLists(data.lists)
             if (data.lists.length > 0 && !activeList) {
                 setActiveList(data.lists[0].id)
@@ -142,7 +144,7 @@ export default function Todos() {
                                 { 
                                     id: data.id, 
                                     title: data.title, 
-                                    status: 'todo' as const,
+                                    status: 'todo' as TodoStatus,
                                     createdAt: new Date().toISOString()
                                 },
                             ],
@@ -192,15 +194,17 @@ export default function Todos() {
         let listId: string | null = null
         let todo: Todo | null = null
 
-        // If we're on a specific list page, use that as the source
-        if (activeList) {
+        // If we're on a specific list page (not 'all'), use that as the source
+        if (activeList && activeList !== 'all') {
             listId = activeList
             const foundTodo = lists.find(l => l.id === activeList)?.todos.find(t => t.id === todoId)
             if (foundTodo) {
                 todo = foundTodo
             }
-        } else {
-            // Otherwise search all lists
+        }
+        
+        // If we're on 'all' tab or didn't find the todo in the active list, search all lists
+        if (!todo) {
             for (const list of lists) {
                 const foundTodo = list.todos.find(t => t.id === todoId)
                 if (foundTodo) {
@@ -214,7 +218,7 @@ export default function Todos() {
         if (!listId || !todo) return
 
         let newStatus: TodoStatus
-        switch (todo.status) {
+        switch (todo.status || 'todo') {  // Add fallback to 'todo' if status is undefined
             case 'todo':
                 newStatus = 'doing'
                 break
@@ -225,7 +229,7 @@ export default function Todos() {
                 newStatus = 'todo'
                 break
             default:
-                newStatus = 'todo'
+                newStatus = 'doing'  // Changed default to 'doing' since we want first click to go to 'doing'
         }
 
         // Optimistically update the UI
@@ -585,7 +589,7 @@ export default function Todos() {
                                             >
                                                 <button
                                                     onClick={() => handleToggleTodoStatus(todo.id)}
-                                                    className={`w-6 h-6 rounded-full border-2 transition-colors duration-200 ${getStatusStyle(todo.status)}`}
+                                                    className={`w-6 h-6 rounded-full transition-colors duration-200 ${getStatusStyle(todo.status)}`}
                                                     title={`Status: ${todo.status}`}
                                                 >
                                                     {todo.status === 'completed' && (
@@ -612,21 +616,14 @@ export default function Todos() {
                                                         />
                                                     </form>
                                                 ) : (
-                                                    <div className="flex-1 flex items-center gap-2">
-                                                        <span
-                                                            className={`flex-1 px-3 py-2 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg transition-colors ${getTitleStyle(todo.status)}`}
-                                                            onClick={() => {
-                                                                setEditingTodoId(todo.id);
-                                                                setEditingTitle(todo.title);
-                                                            }}
-                                                        >
-                                                            {todo.title}
-                                                        </span>
-                                                        {todo.status === 'doing' && (
-                                                            <span className="px-2 py-1 text-xs font-medium bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 rounded-full whitespace-nowrap">
-                                                                Doing
-                                                            </span>
-                                                        )}
+                                                    <div
+                                                        className={`flex-1 px-3 py-2 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg transition-colors ${getTitleStyle(todo.status)}`}
+                                                        onClick={() => {
+                                                            setEditingTodoId(todo.id);
+                                                            setEditingTitle(todo.title);
+                                                        }}
+                                                    >
+                                                        {todo.title}
                                                     </div>
                                                 )}
                                                 <div className="flex items-center gap-2">
@@ -662,21 +659,21 @@ export default function Todos() {
                                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                                             </svg>
                                                         </button>
+                                                        {isMovingTodo && movingTodoId === todo.id && (
+                                                            <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700 py-1 z-10">
+                                                                {lists.map(targetList => (
+                                                                    <button
+                                                                        key={targetList.id}
+                                                                        className="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                                                                        onClick={() => handleMoveTodo(todo.id, targetList.id)}
+                                                                        disabled={targetList.id === list.id}
+                                                                    >
+                                                                        Move to {targetList.title}
+                                                                    </button>
+                                                                ))}
+                                                            </div>
+                                                        )}
                                                     </div>
-                                                    {isMovingTodo && movingTodoId === todo.id && (
-                                                        <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700 py-1 z-10">
-                                                            {lists.map(targetList => (
-                                                                <button
-                                                                    key={targetList.id}
-                                                                    className="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-                                                                    onClick={() => handleMoveTodo(todo.id, targetList.id)}
-                                                                    disabled={targetList.id === list.id}
-                                                                >
-                                                                    Move to {targetList.title}
-                                                                </button>
-                                                            ))}
-                                                        </div>
-                                                    )}
                                                 </div>
                                             </div>
                                         ))}
@@ -699,7 +696,13 @@ export default function Todos() {
                                             onClick={() => handleToggleTodoStatus(todo.id)}
                                             className={`w-6 h-6 rounded-full border-2 transition-colors duration-200 ${getStatusStyle(todo.status)}`}
                                             title={`Status: ${todo.status}`}
-                                        />
+                                        >
+                                            {todo.status === 'completed' && (
+                                                <svg className="w-4 h-4 mx-auto text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                                </svg>
+                                            )}
+                                        </button>
                                         {editingTodoId === todo.id ? (
                                             <form
                                                 onSubmit={(e) => {
@@ -718,20 +721,14 @@ export default function Todos() {
                                                 />
                                             </form>
                                         ) : (
-                                            <div className="flex-1 flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                                            <div
+                                                className={`flex-1 px-3 py-2 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg transition-colors ${getTitleStyle(todo.status)}`}
                                                 onClick={() => {
                                                     setEditingTodoId(todo.id);
                                                     setEditingTitle(todo.title);
                                                 }}
                                             >
-                                                <span className={getTitleStyle(todo.status)}>
-                                                    {todo.title}
-                                                </span>
-                                                {todo.status === 'doing' && (
-                                                    <span className="px-2 py-1 text-xs font-medium bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 rounded-full whitespace-nowrap">
-                                                        Doing
-                                                    </span>
-                                                )}
+                                                {todo.title}
                                             </div>
                                         )}
                                         <div className="flex items-center gap-2">

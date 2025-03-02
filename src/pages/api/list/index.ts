@@ -28,10 +28,16 @@ export default async function handler(
         const snapshot = await db.collection('lists').where("userID", "==", session.user?.id).get()
         const lists = await Promise.all(snapshot.docs.map(async (doc) => {
           const todosSnapshot = await db.collection(`lists/${doc.id}/todos`).get()
-          const todos = todosSnapshot.docs.map(todoDoc => ({
-            id: todoDoc.id,
-            ...todoDoc.data()
-          }))
+          const todos = todosSnapshot.docs.map(todoDoc => {
+            const data = todoDoc.data()
+            return {
+              id: todoDoc.id,
+              title: data.title || '',
+              completed: data.completed || false,
+              createdAt: data.createdAt || new Date().toISOString(),
+              updatedAt: data.updatedAt
+            }
+          })
           
           return {
             id: doc.id,
