@@ -512,7 +512,7 @@ export default function Todos() {
                                 <div className="flex items-center gap-2">
                                     <button
                                         onClick={() => setActiveList(list.id)}
-                                        className={`px-4 py-2 rounded-lg transition-colors ${activeList === list.id
+                                        className={`flex-1 px-4 py-2 rounded-lg transition-colors ${activeList === list.id
                                             ? 'bg-indigo-100 dark:bg-indigo-600 text-indigo-900 dark:text-white'
                                             : 'bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-600 active:bg-slate-100 dark:active:bg-slate-500'}`}
                                     >
@@ -523,7 +523,7 @@ export default function Todos() {
                                             setEditingListId(list.id);
                                             setEditingListTitle(list.title || '');
                                         }}
-                                        className="hidden group-hover:block p-1 rounded-lg text-slate-400 hover:text-indigo-500 hover:bg-white dark:hover:bg-slate-700 transition-colors"
+                                        className="hidden md:block group-hover:block p-1 rounded-lg text-slate-400 hover:text-indigo-500 hover:bg-white dark:hover:bg-slate-700 transition-colors"
                                         title="Edit list name"
                                     >
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
