@@ -362,10 +362,26 @@ export default function Todos() {
     }
 
     const handleDeleteTodo = async (todoId: string) => {
-        if (!activeList) return
+        // Find which list contains this todo
+        let listId: string | null = null;
+
+        // If we're on a specific list page (not 'all'), use that as the source
+        if (activeList && activeList !== 'all') {
+            listId = activeList;
+        } else {
+            // If we're on 'all' tab, search all lists
+            for (const list of lists) {
+                if (list.todos.some(t => t.id === todoId)) {
+                    listId = list.id;
+                    break;
+                }
+            }
+        }
+
+        if (!listId) return;
 
         try {
-            const response = await fetch(`/api/list/${activeList}/todos`, {
+            const response = await fetch(`/api/list/${listId}/todos`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
@@ -377,8 +393,13 @@ export default function Todos() {
                 throw new Error('Failed to delete todo')
             }
 
-            updateLocalTodos(activeList, todos =>
-                todos.filter(todo => todo.id !== todoId)
+            // Update UI for the specific list that contained the todo
+            setLists(currentLists =>
+                currentLists.map(list =>
+                    list.id === listId
+                        ? { ...list, todos: list.todos.filter(todo => todo.id !== todoId) }
+                        : list
+                )
             )
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to delete todo')
