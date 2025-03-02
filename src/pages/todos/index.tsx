@@ -514,7 +514,7 @@ export default function Todos() {
                                         onClick={() => setActiveList(list.id)}
                                         className={`px-4 py-2 rounded-lg transition-colors ${activeList === list.id
                                             ? 'bg-indigo-100 dark:bg-indigo-600 text-indigo-900 dark:text-white'
-                                            : 'bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-600'}`}
+                                            : 'bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-600 active:bg-slate-100 dark:active:bg-slate-500'}`}
                                     >
                                         {list.title}
                                     </button>
