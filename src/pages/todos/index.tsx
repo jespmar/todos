@@ -76,7 +76,7 @@ export default function Todos() {
     const [editingListId, setEditingListId] = useState<string | null>(null)
     const [editingListTitle, setEditingListTitle] = useState<string>('')
 
-    const fetchLists = async () => {
+    const fetchLists = useCallback(async () => {
         try {
             const response = await fetch('/api/list')
             if (!response.ok) {
@@ -92,13 +92,13 @@ export default function Todos() {
         } finally {
             setLoading(false)
         }
-    }
+    }, [activeList])
 
     useEffect(() => {
         if (session) {
             fetchLists()
         }
-    }, [session])
+    }, [session, fetchLists])
 
     const updateLocalTodos = useCallback((listId: string, updater: (todos: Todo[]) => Todo[]) => {
         setLists(currentLists => {

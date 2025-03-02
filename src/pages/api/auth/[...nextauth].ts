@@ -78,7 +78,7 @@ export const authOptions: NextAuthOptions = {
   // when an action is performed.
   // https://next-auth.js.org/configuration/callbacks
   callbacks: {
-    jwt: async ({ token, user }:any) => {
+    jwt: async ({ token, user }) => {
       if (user) {
         // Include Firebase UID and other custom claims
         token.uid = user.id
@@ -91,7 +91,7 @@ export const authOptions: NextAuthOptions = {
     },
     
     // Add session callback to include user data
-    session: async ({ session, token }:any) => {
+    session: async ({ session, token }: { session: any, token: any }) => {
       if (token && session.user) {
         session.user.id = token.uid as string
       }

@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '../../../auth/[...nextauth]'
-import { db } from '@/lib/db'
+import { authOptions } from '@/pages/api/auth/[...nextauth]'
+import { db } from '@/lib/firebaseAdmin'
 
 export default async function handler(
   req: NextApiRequest,
@@ -33,13 +33,17 @@ export default async function handler(
     }
 
     const list = listDoc.data()
-    if (list?.userId !== session.user?.email) {
+    if (!list) {
+      return res.status(404).json({ error: 'List data not found' })
+    }
+
+    if (list.userId !== session.user?.email) {
       return res.status(403).json({ error: 'Forbidden' })
     }
 
     // Find the todo and remove it from its current position
     const todos = list.todos || []
-    const todoIndex = todos.findIndex((t: any) => t.id === todoId)
+    const todoIndex = todos.findIndex((t: { id: string }) => t.id === todoId)
     if (todoIndex === -1) {
       return res.status(404).json({ error: 'Todo not found' })
     }

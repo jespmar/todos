@@ -6,7 +6,7 @@ import { db } from "@/lib/firebaseAdmin"
 type Data = {
   id?: string
   title?: string
-  todos?: any[]
+  todos?: Array<{ id: string; text: string; completed: boolean }>
   error?: string
   message?: string
 }
