@@ -3,6 +3,14 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/pages/api/auth/[...nextauth]'
 import { db } from '@/lib/firebaseAdmin'
 
+interface Todo {
+  id: string
+  text: string
+  completed: boolean
+  createdAt?: string
+  updatedAt?: string
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' })
@@ -37,7 +45,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (!todoDoc.exists) {
             return res.status(404).json({ error: 'Todo not found' })
         }
-        const todo = { id: todoDoc.id, ...todoDoc.data() }
+        const todo = { id: todoDoc.id, ...todoDoc.data() } as Todo
 
         // Get the target list
         const targetList = await db.collection('lists').doc(targetListId).get()
@@ -59,9 +67,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         // Prepare the updated todo data
         const updatedTodo = {
-            title: todo.title,
-            status: todo.status,
-            createdAt: todo.createdAt,
+            text: todo.text,
+            completed: todo.completed,
+            createdAt: todo.createdAt || new Date().toISOString(),
             updatedAt: new Date().toISOString()
         }
 

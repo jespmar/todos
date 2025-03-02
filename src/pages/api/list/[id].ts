@@ -40,6 +40,8 @@ export default async function handler(
         const todosSnapshot = await db.collection(`lists/${id}/todos`).get()
         const todos = todosSnapshot.docs.map(doc => ({
           id: doc.id,
+          text: doc.data().text || '',
+          completed: doc.data().completed || false,
           ...doc.data()
         }))
 
